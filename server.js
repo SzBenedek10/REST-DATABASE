@@ -17,12 +17,13 @@ const db = new sqlite.Database('users.db', (err) =>{
 //adatbázis séma létrehozása
 db.run(`CREATE TABLE IF NOT EXISTS users(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    firstname TEXT NOT NULL,
+    firstName TEXT NOT NULL,
     lastName TEXT NOT NULL,
     city TEXT NOT NULL,
     address TEXT NOT NULL,
     phone TEXT NOT NULL,
-    grnder TEXT NOT NULL 
+    email TEXT NOT NULL,
+    gender TEXT NOT NULL 
     )`);
 //POST végpont az adatok mentésére a users táblában 
 app.post('/api/users',(req,res) =>{
@@ -30,6 +31,16 @@ app.post('/api/users',(req,res) =>{
     const {firstName, lastName, city, address, phone, email, gender}= req.body;
 
     const sql = 'INSERT INTO users (firstName, lastName, city, address, phone, email, gender) VALUES(?,?,?,?,?,?,?)'
+    db.run(sql, [firstName, lastName, city, address, phone, email, gender],
+    function(err){
+        if (err) {
+            console.log(err);
+            return res.status(500).json({error: "Hiba történt"});
+        }
+        else {
+            res.status(200).send({message: 'Adatok sikeresen rögzítése', id: this.lastID,firstName, lastName, city, address, phone, email, gender});
+        }
+    })
 })
 
 
