@@ -1,0 +1,9 @@
+{
+  "firstName": "Mekk",
+  "lastName": "Elas",
+  "city": "Vonyarc",
+  "address": "Gyenes Lovassy utca 10",
+  "phone": "06123456789",
+  "email": "valami@gmail.com",
+  "gender": "férfi"
+}
