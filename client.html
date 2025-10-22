@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>REST API elérés és Felhasználói adatok kezelése</title>
+    <style>
+        .center
+        {
+            width: 600px;
+            height: auto;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #usersTable,
+        #usersTable th,
+        #usersTable td
+        {
+            border: 1px solid black;
+            padding: 3px;
+            border-collapse: collapse;
+        }
+    </style>
 </head>
 <body>
     <h3>REST API elérés és Felhasználói adatok kezelése</h3>
@@ -37,6 +54,26 @@
                 <button type="submit">Elküld</button>
             </p>
         </form>
+        <div class="users-table">
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>firstName</th>
+                <th>lastName</th>
+                <th>city</th>
+                <th>address</th>
+                <th>phone</th>
+                <th>email</th>
+                <th>gender</th>
+                <th>actions</th>
+
+            </tr>
+        </thead>
+        
+        <tbody id="usersData"><!-- IDE JÖNNEK A TÁBLÁZAT SORAI --></tbody>
+    </table>
+</div>
     <script scr="client.js"></script>
 </body>
 </html>
