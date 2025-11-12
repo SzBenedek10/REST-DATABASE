@@ -1,3 +1,4 @@
+
 //REST frontend - HTML kliens, az API elérésére és az adatbázis műveletekre
 
 const apiUrl = 'http://localhost:3000/api/users';
@@ -32,3 +33,4 @@ async function getUsers() {
     }
 }
 getUsers();// Az adatok lekérése szolgáló
+
