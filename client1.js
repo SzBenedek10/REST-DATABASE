@@ -21,7 +21,7 @@ async function getUsers() {
                 <td>${user.email}</td>
                 <td>${user.gender}</td>
                 <td>
-                    <button>Törlés</button>
+                     <button>Törlés</button>
                 </td>
             </tr>
             `).join('');
@@ -32,5 +32,44 @@ async function getUsers() {
 
     }
 }
+
+//Adatok küldése az API-nak
+//Az ürlap adatok gyüjtése 
+document.getElementById('userForm').addEventListener('submit',async(e)=>{
+    e.preventDefault();//Az alapértelmezett ürlap visaelkedés letiltása
+    try{
+            const formData = new FormData(e.target);//Az ürlap adatainak az elérése
+            const data = Object.fromEntries(formData);//A data objektum tárolja az input mető értékeit 
+
+            //Az input elemek kitöltségének az ellenörzése 
+            if (!data.firstName || !data.lastName || !data.city || !data.address || !data.phone || !data.email || !data.gender){
+                alert("Hiányzó adatok!, Kérem, hogy minden töltsön ki mindent ")
+            }
+            else{
+                const  response = await  fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body : JSON.stringify(data)
+                });
+                //Várunk a server(API)válaszára
+                const result = await response.json();
+
+                //Az API válaszától függően.. 
+
+                if (response.ok) {
+                    alert(result.message);
+                    getUsers(); // A táblázat frissítése 
+
+                }
+                else{
+                    alert(result.message);
+                }
+                e.target.reset();
+            }
+    }
+    catch(error){
+        alert(error.message)
+    }
+})
 getUsers();// Az adatok lekérése szolgáló
 
