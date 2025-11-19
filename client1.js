@@ -1,6 +1,8 @@
 
 //REST frontend - HTML kliens, az API elérésére és az adatbázis műveletekre
 
+const { use } = require("react");
+
 const apiUrl = 'http://localhost:3000/api/users';
 const usersData = document.getElementById('usersData');
 
@@ -21,7 +23,8 @@ async function getUsers() {
                 <td>${user.email}</td>
                 <td>${user.gender}</td>
                 <td>
-                     <button>Törlés</button>
+                    <button>Módosítás</button>
+                     <button>onClick="deleteUser(${user.id}" Törlés</button>
                 </td>
             </tr>
             `).join('');
@@ -71,5 +74,32 @@ document.getElementById('userForm').addEventListener('submit',async(e)=>{
         alert(error.message)
     }
 })
+//A felhasználói adatok törlése 
+async function deleteUser(id){
+    if(confirm("Valóban törölni akarod a felhasználót? ")) {
+        try {
+            const response = await fetch(`${apiUrl}/${id}`,{
+                method: 'DELETE'
+
+            });
+               //Nézzük meg hoyg mit válaszolt az Api
+               if(response.ok) {
+                getUsers();//A tábnlázatunk frissítése
+
+               }
+               else {
+                console.error("Hiba történt a felhasználó törlése során", await response.json)
+               } 
+            
+            
+
+        }
+        catch(error) {
+            alert("A felhasználók törlése sikertelen volt");
+            console.error( "Az adatok törlése sikertelen volt!", error);
+
+        }
+    }
+}
 getUsers();// Az adatok lekérése szolgáló
 
