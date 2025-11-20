@@ -1,18 +1,13 @@
-
-//REST frontend - HTML kliens, az API elérésére és az adatbázis műveletekre
-
-const { use } = require("react");
-
 const apiUrl = 'http://localhost:3000/api/users';
 const usersData = document.getElementById('usersData');
 
-//Az API elérése és az adatok lekérése
-
+// ---- FELHASZNÁLÓK LEKÉRÉSE ----
 async function getUsers() {
-    try  {
-        const response = await fetch(apiUrl); //Kapcsolódás az API-hoz
+    try {
+        const response = await fetch(apiUrl);
         const users = await response.json();
-        usersData.innerHTML = users.map(user  => `
+
+        usersData.innerHTML = users.map(user => `
             <tr>
                 <td>${user.id}</td>
                 <td>${user.firstName}</td>
@@ -23,83 +18,113 @@ async function getUsers() {
                 <td>${user.email}</td>
                 <td>${user.gender}</td>
                 <td>
-                    <button>Módosítás</button>
-                     <button>onClick="deleteUser(${user.id}" Törlés</button>
+                    <button onClick="editUser(${user.id}, '${user.firstName}', '${user.lastName}', '${user.city}', '${user.address}', '${user.phone}', '${user.email}', '${user.gender}')">Módosítás</button>
+                    <button onClick="deleteUser(${user.id})">Törlés</button>
                 </td>
             </tr>
-            `).join('');
-    }
-    catch (e) {
+        `).join('');
+    } catch (e) {
         console.error(e.message);
-        alert('Hiba történt az adatok elérése során')
-
+        alert('Hiba történt az adatok elérése során');
     }
 }
 
-//Adatok küldése az API-nak
-//Az ürlap adatok gyüjtése 
-document.getElementById('userForm').addEventListener('submit',async(e)=>{
-    e.preventDefault();//Az alapértelmezett ürlap visaelkedés letiltása
-    try{
-            const formData = new FormData(e.target);//Az ürlap adatainak az elérése
-            const data = Object.fromEntries(formData);//A data objektum tárolja az input mető értékeit 
+// ---- ÚJ FELHASZNÁLÓ HOZZÁADÁSA ----
+document.getElementById('userForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-            //Az input elemek kitöltségének az ellenörzése 
-            if (!data.firstName || !data.lastName || !data.city || !data.address || !data.phone || !data.email || !data.gender){
-                alert("Hiányzó adatok!, Kérem, hogy minden töltsön ki mindent ")
-            }
-            else{
-                const  response = await  fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body : JSON.stringify(data)
-                });
-                //Várunk a server(API)válaszára
-                const result = await response.json();
+    try {
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
 
-                //Az API válaszától függően.. 
+        if (!data.firstName || !data.lastName || !data.city || !data.address || !data.phone || !data.email || !data.gender) {
+            alert("Hiányzó adatok! Kérjük, töltsön ki minden mezőt!");
+            return;
+        }
 
-                if (response.ok) {
-                    alert(result.message);
-                    getUsers(); // A táblázat frissítése 
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
 
-                }
-                else{
-                    alert(result.message);
-                }
-                e.target.reset();
-            }
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.message);
+            getUsers();
+        } else {
+            alert(result.message);
+        }
+
+        e.target.reset();
+    } catch (error) {
+        alert(error.message);
     }
-    catch(error){
-        alert(error.message)
+});
+
+// ---- FELHASZNÁLÓ MÓDOSÍTÁSA ----
+async function editUser(id, firstName, lastName, city, address, phone, email, gender) {
+
+    const newFirstName = prompt('Új keresztnév:', firstName);
+    const newLastName = prompt('Új vezetéknév:', lastName);
+    const newCity = prompt('Új város:', city);
+    const newAddress = prompt('Új cím:', address);
+    const newPhone = prompt('Új telefonszám:', phone);
+    const newEmail = prompt('Új email:', email);
+    const newGender = prompt('Új nem:', gender);
+
+    if (!newFirstName || !newLastName || !newCity || !newAddress || !newPhone || !newEmail || !newGender) {
+        alert("Minden mezőt ki kell tölteni!");
+        return;
     }
-})
-//A felhasználói adatok törlése 
-async function deleteUser(id){
-    if(confirm("Valóban törölni akarod a felhasználót? ")) {
+
+    try {
+        const response = await fetch(`${apiUrl}/${id}`, {
+            method: 'PUT',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                firstName: newFirstName,
+                lastName: newLastName,
+                city: newCity,
+                address: newAddress,
+                phone: newPhone,
+                email: newEmail,
+                gender: newGender
+            })
+        });
+
+        if (response.ok) {
+            getUsers();
+        } else {
+            console.error("HIBA", await response.json());
+        }
+
+    } catch (error) {
+        console.error("Nem sikerült módosítani:", error);
+    }
+}
+
+// ---- FELHASZNÁLÓ TÖRLÉSE ----
+async function deleteUser(id) {
+    if (confirm("Valóban törölni szeretnéd a felhasználót?")) {
         try {
-            const response = await fetch(`${apiUrl}/${id}`,{
+            const response = await fetch(`${apiUrl}/${id}`, {
                 method: 'DELETE'
-
             });
-               //Nézzük meg hoyg mit válaszolt az Api
-               if(response.ok) {
-                getUsers();//A tábnlázatunk frissítése
 
-               }
-               else {
-                console.error("Hiba történt a felhasználó törlése során", await response.json)
-               } 
-            
-            
-
-        }
-        catch(error) {
-            alert("A felhasználók törlése sikertelen volt");
-            console.error( "Az adatok törlése sikertelen volt!", error);
-
+            if (response.ok) {
+                getUsers();
+            } else {
+                console.error("Hiba történt a törlésnél", await response.json());
+            }
+        } catch (error) {
+            alert("A felhasználó törlése sikertelen volt!");
+            console.error(error);
         }
     }
 }
-getUsers();// Az adatok lekérése szolgáló
+
+// Indításkor felhasználók lekérése
+getUsers();
 
