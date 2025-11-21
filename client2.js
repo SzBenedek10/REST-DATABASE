@@ -63,6 +63,73 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
     }
 });
 
+
+// ---- FELHASZNÁLÓ MÓDOSÍTÁSA ----
+async function editUser(id, firstName, lastName, city, address, phone, email, gender) {
+
+    const newFirstName = prompt('Új keresztnév:', firstName);
+    const newLastName = prompt('Új vezetéknév:', lastName);
+    const newCity = prompt('Új város:', city);
+    const newAddress = prompt('Új cím:', address);
+    const newPhone = prompt('Új telefonszám:', phone);
+    const newEmail = prompt('Új email:', email);
+    const newGender = prompt('Új nem:', gender);
+
+    if (!newFirstName || !newLastName || !newCity || !newAddress || !newPhone || !newEmail || !newGender) {
+        alert("Minden mezőt ki kell tölteni!");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${apiUrl}/${id}`, {
+            method: 'PUT',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                firstName: newFirstName,
+                lastName: newLastName,
+                city: newCity,
+                address: newAddress,
+                phone: newPhone,
+                email: newEmail,
+                gender: newGender
+            })
+        });
+
+        if (response.ok) {
+            getUsers();
+        } else {
+            console.error("HIBA", await response.json());
+        }
+
+    } catch (error) {
+        console.error("Nem sikerült módosítani:", error);
+    }
+}
+
+// ---- FELHASZNÁLÓ TÖRLÉSE ----
+async function deleteUser(id) {
+    if (confirm("Valóban törölni szeretnéd a felhasználót?")) {
+        try {
+            const response = await fetch(`${apiUrl}/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                getUsers();
+            } else {
+                console.error("Hiba történt a törlésnél", await response.json());
+            }
+        } catch (error) {
+            alert("A felhasználó törlése sikertelen volt!");
+            console.error(error);
+        }
+    }
+}
+
+// Indításkor felhasználók lekérése
+getUsers();
+
+
 // ---- FELHASZNÁLÓ MÓDOSÍTÁSA ----
 async function editUser(id, firstName, lastName, city, address, phone, email, gender) {
 
