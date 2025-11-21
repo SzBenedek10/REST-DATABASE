@@ -1,0 +1,13 @@
+CREATE DATABASE users;
+USE users;
+CREATE TABLE users(
+    id INT AUTO_INCREMENT PRIMARY KEY, 
+    firstName VARCHAR(100) NOT NULL,
+    lastName VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    address VARCHAR(100) NOT NULL,
+    phone VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    gender VARCHAR(100) NOT NULL
+    
+);
