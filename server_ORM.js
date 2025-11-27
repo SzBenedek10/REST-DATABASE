@@ -10,12 +10,12 @@ app.use(cors());//Cors Origin Resource Sharing
 //User modell definiálása
 
 const sequelize = new Sequelize('ormdb','root','',{
-    host: localhost,
-    dialect: mysql,
+    host: 'localhost',
+    dialect: 'mysql',
     logging : false
 });
 //Mysql adatbátis kapcsolat a sequlize ORM-el
-const User= Sequelize.define('User',{
+const User= sequelize.define('User',{
     firstName : {type: DataTypes.STRING, allowNull: false},
     lastName : {type: DataTypes.STRING, allowNull: false},
     city : {type: DataTypes.STRING, allowNull: false},
@@ -78,4 +78,26 @@ app.delete('/api/users/:id', async (req, res) =>{
         res.status(500).json({ message: 'Hiba történt a felhasznáéók törlése során '})
 
     }
+})
+app.put('/api/users/:id', async (req, res) =>{
+    try{
+        const updated = await User.update({
+            where : { id : req.params.id}
+        })
+        if(updated){
+            res.status(200).json({message: 'Sikeres adatfrissítés.'})
+        }
+        else{
+            res.status(404).json({message:' A felhasználó nem található!'})
+        }
+
+    }
+    catch ( err){
+        console.error(err);
+        res.status(500).json({ message: 'Hiba történt a felhasznáéók törlése során '})
+
+    }
+})
+app.listen(port, () => {
+    console.log(`A webszerver fut a http://localhost:${port} webcímen`);
 })
