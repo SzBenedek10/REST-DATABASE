@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql2')
+const mysql = require('mysql2/promise');
 const cors =require('cors');
 const app = express();
 const port = 3000;
@@ -9,21 +9,14 @@ app.use(express.json());
 app.use(cors());//Cors Origin Resource Sharing 
 
 //mysql kapcsolat 
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: '',
     database: 'shopdb1'
 });
 //Kapcsolat ellenőrzése 
-db.connect((err)=>{
-    if(err) {
-        console.log("Mysql kapcsolati hiba ",err);
-    }
-    else{
-        console.log("Sikeres Mysql adatbázis kapcsoalt.");
-    }
-})
+
 
 
 // Modellek létrehozása
@@ -66,7 +59,7 @@ async function createTables(){
             orderId INT NOT NULL,
             productId INT NOT NULL, 
             FOREIGN KEY (orderId) REFERENCES orders(id) ON DELETE CASCADE,
-            FOREIGN KEY (productId) REFERENCES product(id) ON DELETE CASCADE,
+            FOREIGN KEY (productId) REFERENCES product(id) ON DELETE CASCADE
             
             
             )
@@ -154,16 +147,62 @@ app.post('/api/orders',async (req,res) =>{
  //A klienstől érkező adatok fogadása  
  const {userId,status,productIds} = req.body;     
 //Rendelési adatok rögzítése
+await connection.beginTransaction();
 const {orderResult} = await connection.query(
     `INSERT INTO orders (userId, status) VALUES (?,?)`,
     [userId,status]
 );
 const orderId = orderResult.insertId
 //pivot tábla feltöltése  ( orderId , productId)
+if (productIds && productIds.length >0){
+    //Ciklus  
+    for(const pid of productIds) {
+        await connection.query(
+            `INSERT INTO orderproducts (orderId, productId) VALUES (?,?)`,
+            [orderId, pid]
+        );
+    }
+}
+await connection.commit();
+res.status(201).json({message: 'Rendelés létrehozása ', orderId})
     }
     catch(err)
     {
 
+        await connection.rollback();
+        res.status(500).json({message: 'Hiba történt a rendelés létrehozása'});
+    }
+    finally {
+        connection.release();
+    }
+})
+app.get('/api/users/:id/orders/products', async (req, res) =>{
+    try {
+        const userId = req.params.id;
+
+        const [[user]] = await db.query(`SELECT * FROM users WHERE id = ? `, [userId]);
+        // Ha az user megtalálható az adatbázisból 
+        if(!user) res.status(404).json({message: 'A felhasználó nem tallálható '});
+
+        const [orders] = await db.query(`SELECT * FROM orders WHERE id = ? `, [userId])
+
+        /*
+        1. ciklussal bejárjuk az összes rndelést 
+        2.JOIN- al lekérdezzük a rendeléshez tartozó termékeket 
+        3.Az order.products objektumokba beleteszi a termékeket .
+        4.Elküldi a kliensnek a rendeléseket és a hozzátertozó termékeket
+        
+        */ 
+       for (let order of orders) {
+        const sql = `SELECT p.* FROM product p JOIN orderproducts op ON op.productId = p.id WHERE op.orderId = ? `;
+        const [products] = await db.query(sql, [order.id]);
+        order.products =products;
+       }
+       res.status(200).json({...user, ordersn});
+    }
+    catch (err)
+    {
+        res.status(500).json({message: "Hiba történt a rendelések lekérése során "});
     }
 })
 
